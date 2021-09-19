@@ -5,10 +5,12 @@ from . import views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register("users", views.CustomUserViewSet)
+router.register('', views.CustomUserViewSet)
 
 User = get_user_model()
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls)),
+    path('<int:user_id>/subscribe/',
+         views.UserSubscriptionsView.as_view({'get': 'create', 'delete': 'destroy'})),
 ]
