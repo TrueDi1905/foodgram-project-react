@@ -1,15 +1,11 @@
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, mixins, generics, status
-from rest_framework.decorators import api_view
-from rest_framework.generics import GenericAPIView, ListCreateAPIView, CreateAPIView
-from rest_framework.mixins import CreateModelMixin
+from rest_framework import viewsets, mixins, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.views import APIView
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from .models import Tags, Ingredients, Recipes, FavoriteRecipes
 from .serializers import TagSerializer, IngredientsSerializer, RecipeSerializer, FavoriteRecipesSerializer
+from .models import Tags, Ingredients, Recipes, FavoriteRecipes
 
 
 class RecipePaginator(PageNumberPagination):
@@ -26,6 +22,7 @@ class TagList(viewsets.ReadOnlyModelViewSet):
 class IngredientsList(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredients.objects.all()
     serializer_class = IngredientsSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -44,6 +41,7 @@ class FavoriteRecipesView(mixins.CreateModelMixin, mixins.DestroyModelMixin, vie
 
     def destroy(self, request, *args, **kwargs):
         instance = FavoriteRecipes.objects.filter(user=self.request.user, recipe=self.kwargs.get('pk'))
+        if len(instance) == 0:
+            raise ValidationError('Рецепта не был добавлен')
         self.perform_destroy(instance)
-        return Response( status=status.HTTP_204_NO_CONTENT)
-
+        return Response(status=status.HTTP_204_NO_CONTENT)

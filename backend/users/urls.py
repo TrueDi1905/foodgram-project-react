@@ -11,6 +11,7 @@ User = get_user_model()
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('<int:user_id>/subscribe/',
-         views.UserSubscriptionsView.as_view({'get': 'create', 'delete': 'destroy'})),
+    path('<int:id>/subscribe/',
+         views.SubscribeView.as_view({'get': 'create', 'delete': 'destroy'})),
+
 ]

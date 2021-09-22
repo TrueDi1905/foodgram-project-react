@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tags, Ingredients, Recipes, FavoriteRecipes, User
+from .models import Tags, Ingredients, Recipes, FavoriteRecipes, User, IngredientsAmount
 from rest_framework.validators import UniqueTogetherValidator
 
 class TagSerializer(serializers.ModelSerializer):
@@ -21,8 +21,15 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipes
-        fields = ('id', 'author', 'tags', 'name', 'text', 'ingredients', 'cooking_time')
+        fields = '__all__'
         depth = 1
+
+
+class ShortRecipeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipes
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class FavoriteRecipesSerializer(serializers.ModelSerializer):
@@ -39,6 +46,11 @@ class FavoriteRecipesSerializer(serializers.ModelSerializer):
         else:
             return attrs
 
+    def to_representation(self, instance):
+        recipes = ShortRecipeSerializer(instance.recipe)
+        return recipes.data
+
     class Meta:
-        fields = ('user', 'recipe')
+        fields = '__all__'
         model = FavoriteRecipes
+

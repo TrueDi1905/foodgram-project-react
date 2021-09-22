@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer, UserSerializer
+
+from .models import Subscriptions
+
 User = get_user_model()
 from djoser.conf import settings
-from .models import UserSubscriptions
 
 
 class CustomUserSerializer(UserSerializer):
@@ -38,8 +40,22 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         }
 
 
-class UserSubscriptionsSerializer(serializers.ModelSerializer):
-     class Meta:
-         model = UserSubscriptions
-         fields = '__all__'
-         depth = 1
+class SubscribeSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+    follow = serializers.StringRelatedField()
+
+    class Meta:
+        fields = '__all__'
+        model = Subscriptions
+
+    def validate(self, attrs):
+        user = User.objects.get(id=self.context['request'].user.id)
+        follow = User.objects.get(
+            id=self.context['view'].kwargs.get('id')
+        )
+        if Subscriptions.objects.filter(user=user, follow=follow).exists():
+            raise serializers.ValidationError("Вы уже подписаны на этого парня!")
+        if user == follow:
+            raise serializers.ValidationError("На себя нельзя подписаться!")
+        else:
+            return attrs
