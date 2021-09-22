@@ -3,8 +3,9 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 
 from rest_framework import mixins, viewsets, status
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from rest_framework.response import Response
 
 from .serializers import CustomUserSerializer
@@ -14,15 +15,39 @@ from .serializers import SubscribeSerializer
 User = get_user_model()
 
 
-class UserPaginator(PageNumberPagination):
-    page_size = 100
-    page_size_query_param = 'page_size'
-    max_page_size = 1000
-
-
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
-    pagination_class = UserPaginator
+    pagination_class = LimitOffsetPagination #также нужно добавить пагинацию по страницам
+
+    @action(
+        ["post"], detail=False, url_path="reset_{}_confirm".format(User.USERNAME_FIELD)
+    )
+    def reset_username_confirm(self, request, *args, **kwargs):
+        raise ValidationError({'error': 'Недоступно'})
+
+    @action(["post"], detail=False, url_path="reset_{}".format(User.USERNAME_FIELD))
+    def reset_username(self, request, *args, **kwargs):
+        raise ValidationError({'error': 'Недоступно'})
+
+    @action(["post"], detail=False, url_path="set_{}".format(User.USERNAME_FIELD))
+    def set_username(self, request, *args, **kwargs):
+        raise ValidationError({'error': 'Недоступно'})
+
+    @action(["post"], detail=False)
+    def reset_password_confirm(self, request, *args, **kwargs):
+        raise ValidationError({'error': 'Недоступно'})
+
+    @action(["post"], detail=False)
+    def reset_password(self, request, *args, **kwargs):
+        raise ValidationError({'error': 'Недоступно'})
+
+    @action(["post"], detail=False)
+    def resend_activation(self, request, *args, **kwargs):
+        raise ValidationError({'error': 'Недоступно'})
+
+    @action(["post"], detail=False)
+    def activation(self, request, *args, **kwargs):
+        raise ValidationError({'error': 'Недоступно'})
 
 
 class SubscribeView(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
