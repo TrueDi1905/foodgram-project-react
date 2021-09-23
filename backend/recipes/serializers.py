@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Tags, Ingredients, Recipes, FavoriteRecipes, User, IngredientsAmount
-from rest_framework.validators import UniqueTogetherValidator
+
 
 class TagSerializer(serializers.ModelSerializer):
 
@@ -18,10 +18,14 @@ class IngredientsSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
+    tags = serializers.StringRelatedField(many=True)
+    ingredients = serializers.StringRelatedField(many=True)
 
+    def create(self, validated_data):
+        tags = validated_data.pop('tags')
     class Meta:
         model = Recipes
-        fields = '__all__'
+        fields = ('id', 'tags', 'name', 'text', 'ingredients', 'cooking_time', 'author',)
         depth = 1
 
 

@@ -14,7 +14,7 @@ class TagsAdmin(admin.ModelAdmin):
 
 
 class RecipesAdmin(admin.ModelAdmin):
-    list_display = ('author', 'name')
+    list_display = ('author', 'name',)
     search_fields = ('name',)
 
 

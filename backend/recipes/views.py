@@ -30,6 +30,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     pagination_class = RecipePaginator
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
 
 class FavoriteRecipesView(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = FavoriteRecipes.objects.all()
