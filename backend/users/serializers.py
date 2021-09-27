@@ -1,12 +1,10 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer, UserSerializer
-
+from rest_framework.validators import UniqueTogetherValidator
 from .models import Subscriptions
-
 User = get_user_model()
 from djoser.conf import settings
-
 
 class CustomUserSerializer(UserSerializer):
 
@@ -41,21 +39,27 @@ class CustomUserCreateSerializer(UserCreateSerializer):
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()
-    follow = serializers.StringRelatedField()
+    recipes = serializers.SerializerMethodField()
 
     class Meta:
         fields = '__all__'
         model = Subscriptions
 
-    def validate(self, attrs):
-        user = User.objects.get(id=self.context['request'].user.id)
-        follow = User.objects.get(
-            id=self.context['view'].kwargs.get('id')
-        )
-        if Subscriptions.objects.filter(user=user, follow=follow).exists():
-            raise serializers.ValidationError("Вы уже подписаны на этого парня!")
-        if user == follow:
-            raise serializers.ValidationError("На себя нельзя подписаться!")
-        else:
-            return attrs
+    def validate(self, data):
+        if data['user'] == data['follow']:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на самого себя!')
+        if Subscriptions.objects.filter(user=data['user'], follow=data['follow']).exists():
+            raise serializers.ValidationError('Вы уже подписаны на этого парня!')
+        return data
+
+    def get_recipes(self, obj):
+        recipe = obj.follow.recipes
+        return recipe
+
+
+class SubscriptionsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = '__all__'
+        models = Subscriptions

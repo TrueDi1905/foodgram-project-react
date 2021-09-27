@@ -10,4 +10,5 @@ router.register('recipes', views.RecipesViewSet, basename='recipes')
 urlpatterns = [
     path('', include(router.urls)),
     path('recipes/<int:pk>/favorite/', views.FavoriteRecipesView.as_view({'get': 'create', 'delete': 'destroy'})),
+    path('recipes/<int:pk>/shopping_cart/', views.ShoppingCartView.as_view({'get': 'create', 'delete': 'destroy'}))
 ]

@@ -1,15 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from djoser.views import UserViewSet
-
-from rest_framework import mixins, viewsets, status
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-
-from .serializers import CustomUserSerializer
+from djoser.views import UserViewSet
 from .models import Subscriptions
+from .serializers import CustomUserSerializer, SubscriptionsSerializer
 from .serializers import SubscribeSerializer
 
 User = get_user_model()
@@ -18,6 +16,37 @@ User = get_user_model()
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     pagination_class = LimitOffsetPagination #также нужно добавить пагинацию по страницам
+
+    def get_serializer_class(self):
+        if self.action == 'subscriptions':
+            return SubscriptionsSerializer
+        if self.action == 'subscribe':
+            return SubscribeSerializer
+        return CustomUserSerializer
+
+    @action(detail=False)
+    def subscriptions(self, request):
+        follow = Subscriptions.objects.filter(user=request.user)
+        serializer = self.get_serializer(follow, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['GET', 'DELETE'])
+    def subscribe(self, request, id):
+        user = request.user.id
+        follow = get_object_or_404(User, id=id)
+        if request.method == 'GET':
+            data = {'user': user, 'follow': id}
+            serializer = self.get_serializer(data=data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        follow = Subscriptions.objects.filter(user=user, follow=follow)
+        if not follow:
+            return Response({
+                'errors': 'Вы не подписаны на этого парня!'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        follow.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         ["post"], detail=False, url_path="reset_{}_confirm".format(User.USERNAME_FIELD)
@@ -48,36 +77,3 @@ class CustomUserViewSet(UserViewSet):
     @action(["post"], detail=False)
     def activation(self, request, *args, **kwargs):
         raise ValidationError({'error': 'Недоступно'})
-
-
-class SubscribeView(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Subscriptions.objects.all()
-    serializer_class = SubscribeSerializer
-
-    def create(self, request, *args, **kwargs):
-        if len(User.objects.filter(id=self.kwargs.get('id'))) == 0:
-            Response(status=status.HTTP_404_NOT_FOUND)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def perform_create(self, serializer):
-        follow = get_object_or_404(User, id=self.kwargs.get('id'))
-        serializer.save(user=self.request.user, follow=follow)
-
-    def destroy(self, request, *args, **kwargs):
-        if len(User.objects.filter(id=self.kwargs.get('id'))) == 0:
-            Response(status=status.HTTP_404_NOT_FOUND)
-        follow = get_object_or_404(User, id=self.kwargs.get('id'))
-        instance = Subscriptions.objects.filter(user=self.request.user, follow=follow)
-        if len(instance) == 0:
-            raise ValidationError('нет такого парня')
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class SubscriptionsView(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Subscriptions.objects.all()
-    serializer_class = SubscribeSerializer

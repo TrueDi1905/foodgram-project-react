@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tags, Ingredients, Recipes, FavoriteRecipes, User, IngredientsAmount
+from .models import Tags, Ingredients, Recipes, FavoriteRecipes, User, IngredientsAmount, ShoppingCart
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -16,16 +16,32 @@ class IngredientsSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
 
-class RecipeSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField()
-    tags = serializers.StringRelatedField(many=True)
-    ingredients = serializers.StringRelatedField(many=True)
+class IngredientsAmountSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    name = serializers.ReadOnlyField()
+    measurement_unit = serializers.ReadOnlyField()
+    amount = serializers.StringRelatedField(many=True)
 
-    def create(self, validated_data):
-        tags = validated_data.pop('tags')
+    class Meta:
+        model = IngredientsAmount
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
+class UserRecipesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'first_name', 'last_name')
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    author = UserRecipesSerializer(read_only=True)
+    tags = serializers.StringRelatedField(many=True)
+    ingredients = IngredientsAmountSerializer(many=True)
+
     class Meta:
         model = Recipes
-        fields = ('id', 'tags', 'name', 'text', 'ingredients', 'cooking_time', 'author',)
+        fields = '__all__'
         depth = 1
 
 
@@ -58,3 +74,25 @@ class FavoriteRecipesSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = FavoriteRecipes
 
+
+class ShoppingSerializers(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+    recipes_shop = serializers.StringRelatedField()
+
+    def validate(self, attrs):
+        user = User.objects.get(id=self.context['request'].user.id)
+        recipe = Recipes.objects.get(
+            id=self.context['view'].kwargs.get('pk')
+        )
+        if ShoppingCart.objects.filter(user=user, recipes_shop=recipe).exists():
+            raise serializers.ValidationError("Данный рецепт уже есть в в списке покупок")
+        else:
+            return attrs
+
+    def to_representation(self, instance):
+        recipes = ShortRecipeSerializer(instance.recipes_shop)
+        return recipes.data
+
+    class Meta:
+        fields = '__all__'
+        model = ShoppingCart
