@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from djoser.views import UserViewSet
 from .models import Subscriptions
@@ -13,9 +13,13 @@ from .serializers import SubscribeSerializer
 User = get_user_model()
 
 
+class UserPagination(PageNumberPagination):
+    page_size_query_param = 'limit'
+
+
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
-    pagination_class = LimitOffsetPagination #также нужно добавить пагинацию по страницам
+    pagination_class = UserPagination
 
     def get_serializer_class(self):
         if self.action == 'subscriptions':
@@ -26,8 +30,12 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=False)
     def subscriptions(self, request):
-        follow = Subscriptions.objects.filter(user=request.user)
-        serializer = self.get_serializer(follow, many=True)
+        subscribe = Subscriptions.objects.filter(user=request.user)
+        page = self.paginate_queryset(subscribe)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(subscribe, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['GET', 'DELETE'])

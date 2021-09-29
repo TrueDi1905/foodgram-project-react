@@ -66,9 +66,7 @@ class FavoriteRecipesSerializer(serializers.ModelSerializer):
         else:
             return attrs
 
-    def to_representation(self, instance):
-        recipes = ShortRecipeSerializer(instance.recipe)
-        return recipes.data
+
 
     class Meta:
         fields = '__all__'
