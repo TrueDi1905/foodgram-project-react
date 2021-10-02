@@ -25,10 +25,13 @@ class CustomUserSerializer(UserSerializer):
     def get_is_subscribed(self, obj):
         if not self.context:
             return 'true'
-        user = self.context['request'].user
-        if Subscriptions.objects.filter(user=user, follow=obj.id).exists():
-            return 'true'
-        return 'false'
+        try:
+            user = self.context['request'].user
+            if Subscriptions.objects.filter(user=user, follow=obj.id).exists():
+                return 'true'
+            return 'false'
+        except:
+            return 'false'
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
