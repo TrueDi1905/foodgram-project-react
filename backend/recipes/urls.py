@@ -3,7 +3,7 @@ from . import views
 
 router = DefaultRouter()
 router.register('tags', views.TagList, basename='tags')
-router.register('ingredients', views.IngredientsList, basename='ingredients')
-router.register(r'recipes', views.RecipesViewSet, basename='recipes')
+router.register('ingredients', views.IngredientList, basename='ingredients')
+router.register(r'recipes', views.RecipeViewSet, basename='recipes')
 
 urlpatterns = router.urls

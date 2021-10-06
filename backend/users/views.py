@@ -6,8 +6,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from djoser.views import UserViewSet
-from .models import Subscriptions
-from .serializers import CustomUserSerializer, SubscriptionsSerializer
+from .models import Subscription
+from .serializers import CustomUserSerializer, SubscriptionSerializer
 from .serializers import SubscribeSerializer
 
 User = get_user_model()
@@ -21,21 +21,14 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     pagination_class = UserPagination
 
-    def get_serializer_class(self):
-        if self.action == 'subscriptions':
-            return SubscriptionsSerializer
-        if self.action == 'subscribe':
-            return SubscribeSerializer
-        return CustomUserSerializer
-
     @action(detail=False)
     def subscriptions(self, request):
-        subscribe = Subscriptions.objects.filter(user=request.user)
+        subscribe = Subscription.objects.filter(user=request.user)
         page = self.paginate_queryset(subscribe)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = SubscriptionSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(subscribe, many=True)
+        serializer = SubscriptionSerializer(subscribe, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['GET', 'DELETE'])
@@ -44,11 +37,11 @@ class CustomUserViewSet(UserViewSet):
         follow = get_object_or_404(User, id=id)
         if request.method == 'GET':
             data = {'user': user, 'follow': id}
-            serializer = self.get_serializer(data=data, context={'request': request})
+            serializer = SubscribeSerializer(data=data, context={'request': request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        follow = Subscriptions.objects.filter(user=user, follow=follow)
+        follow = Subscription.objects.filter(user=user, follow=follow)
         if not follow:
             return Response({
                 'errors': 'Вы не подписаны на этого парня!'
