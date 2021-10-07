@@ -73,7 +73,7 @@ class IngredientAmount(models.Model):
         ]
 
     def __str__(self):
-        f'{self.recipe}: {self.ingredient} {self.amount}'
+        self.amount
 
 
 class FavoriteRecipe(models.Model):

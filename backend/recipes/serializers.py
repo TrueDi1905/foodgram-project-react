@@ -69,10 +69,9 @@ class UserRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'first_name', 'last_name')
 
 
-class IngredientAmountRecipeSerializer(serializers.ModelSerializer):
+class IngredientRecipeSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all()
-    )
+        queryset=Ingredient.objects.all())
 
     class Meta:
         model = IngredientAmount
@@ -84,7 +83,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(many=True,
         queryset=Tag.objects.all()
     )
-    ingredients = IngredientAmountRecipeSerializer(many=True)
+    ingredients = IngredientRecipeSerializer(many=True)
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -111,11 +110,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         print(validated_data)
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        print(ingredients)
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
+        print(ingredients)
         for ingredient in ingredients:
-            print(ingredient)
             current_ingredient = Ingredient.objects.get(id=ingredient['id'].id)
             IngredientAmount.objects.create(
                 ingredients=current_ingredient, recipes=recipe, amount=ingredient['amount'])
