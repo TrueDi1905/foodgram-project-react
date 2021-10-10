@@ -85,7 +85,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False)
-    def download_shopping_cart(self, request):
+    def download_shopping_cart(self, request, permission_classes=[IsAuthenticated]):
         shop_list = ShoppingCart.objects.filter(user=request.user).all()
         recipes = []
         for i in shop_list:

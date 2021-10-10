@@ -83,7 +83,8 @@ class FavoriteRecipe(models.Model):
         Recipe, on_delete=models.CASCADE, related_name="favorite_recipe")
 
     class Meta:
-        verbose_name = "Список избранного"
+        verbose_name_plural = "Список избранного"
+        verbose_name = "Список в избранного"
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
@@ -101,7 +102,8 @@ class ShoppingCart(models.Model):
                              )
 
     class Meta:
-        verbose_name = "Список покупок"
+        verbose_name_plural = "Список покупок"
+        verbose_name = "Список в покупок"
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipes_shop'],

@@ -27,9 +27,7 @@ services:
       - backend
 
   backend:
-    build:
-      context: ../backend/
-      dockerfile: Dockerfile
+    image: truedi1905/foodgram
     restart: always
     depends_on:
       - db
