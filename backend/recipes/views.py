@@ -1,19 +1,20 @@
-import io
-import django_filters
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import filters
 from django_filters import rest_framework as filter
-from users.views import UserPagination
-from .filters import RecipeFilter
-from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer, FavoriteRecipeSerializer, \
-    ShoppingSerializers
-from .models import Tag, Ingredient, Recipe, FavoriteRecipe, ShoppingCart
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
-from django.http import FileResponse, HttpResponse
-from reportlab.pdfgen import canvas
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
+
+from users.views import UserPagination
+
+from .filters import RecipeFilter
+from .models import (FavoriteRecipe, Ingredient, IngredientAmount, Recipe,
+                     ShoppingCart, Tag)
+from .serializers import (FavoriteRecipeSerializer, IngredientSerializer,
+                          RecipeSerializer, ShoppingSerializers,
+                          TagSerializer)
 
 
 class TagList(viewsets.ReadOnlyModelViewSet):
@@ -85,13 +86,29 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def download_shopping_cart(self, request):
-        recipe = get_object_or_404(ShoppingCart, user=request.user)
-        result = []
-        result += str(recipe.recipes_shop.name)
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="somefilename.pdf"'
-        p = canvas.Canvas(response)
-        p.drawString(100, 100, result)
-        p.showPage()
-        p.save()
+        shop_list = ShoppingCart.objects.filter(user=request.user).all()
+        recipes = []
+        for i in shop_list:
+            recipes.append(i.recipes_shop)
+        ingredients = []
+        for i in recipes:
+            ingredients += (IngredientAmount.objects.filter(recipes=i).all())
+        ingredients_sale = {}
+        for i in ingredients:
+            if i.ingredients in ingredients_sale:
+                ingredients_sale[i.ingredients] = ingredients_sale[i.ingredients] + i.amount
+                break
+            ingredients_sale[i.ingredients] = i.amount
+        result_sale = ''
+        for i in ingredients_sale:
+            weight = 0
+            weight += ingredients_sale[i]
+            result_sale += (f'{i.name} - {str(weight)} {i.measurement_unit}. ')
+        download = open("sale_list.txt", "w+")
+        download.write(result_sale)
+        download.close()
+        read_file = open("sale_list.txt", "r")
+        response = HttpResponse(read_file.read(), content_type="text/plain,charset=utf8")
+        read_file.close()
+        response['Content-Disposition'] = 'attachment; filename="{}.txt"'.format('file_name')
         return response

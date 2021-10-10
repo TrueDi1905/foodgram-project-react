@@ -1,14 +1,15 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from djoser.views import UserViewSet
+
 from .models import Subscription
-from .serializers import CustomUserSerializer, SubscriptionSerializer
-from .serializers import SubscribeSerializer
+from .serializers import (CustomUserSerializer, SubscribeSerializer,
+                          SubscriptionSerializer)
 
 User = get_user_model()
 
@@ -37,7 +38,8 @@ class CustomUserViewSet(UserViewSet):
         follow = get_object_or_404(User, id=id)
         if request.method == 'GET':
             data = {'user': user, 'follow': id}
-            serializer = SubscribeSerializer(data=data, context={'request': request})
+            serializer = SubscribeSerializer(
+                data=data, context={'request': request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -50,16 +52,19 @@ class CustomUserViewSet(UserViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
-        ["post"], detail=False, url_path="reset_{}_confirm".format(User.USERNAME_FIELD)
+        ["post"], detail=False,
+        url_path="reset_{}_confirm".format(User.USERNAME_FIELD)
     )
     def reset_username_confirm(self, request, *args, **kwargs):
         raise ValidationError({'error': 'Недоступно'})
 
-    @action(["post"], detail=False, url_path="reset_{}".format(User.USERNAME_FIELD))
+    @action(["post"], detail=False,
+            url_path="reset_{}".format(User.USERNAME_FIELD))
     def reset_username(self, request, *args, **kwargs):
         raise ValidationError({'error': 'Недоступно'})
 
-    @action(["post"], detail=False, url_path="set_{}".format(User.USERNAME_FIELD))
+    @action(["post"], detail=False,
+            url_path="set_{}".format(User.USERNAME_FIELD))
     def set_username(self, request, *args, **kwargs):
         raise ValidationError({'error': 'Недоступно'})
 

@@ -1,6 +1,6 @@
-from django.db import models
-from django.contrib.auth import get_user_model
 from colorfield.fields import ColorField
+from django.contrib.auth import get_user_model
+from django.db import models
 
 User = get_user_model()
 
@@ -57,9 +57,10 @@ class Recipe(models.Model):
 
 class IngredientAmount(models.Model):
     ingredients = models.ForeignKey(
-        Ingredient, on_delete=models.CASCADE, related_name="amount"
+        Ingredient, on_delete=models.CASCADE, related_name="ingredient_amount"
     )
-    recipes = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    recipes = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="ingredient_amount")
     amount = models.PositiveSmallIntegerField(verbose_name="Кол-во")
 
     class Meta:
@@ -71,9 +72,6 @@ class IngredientAmount(models.Model):
                 name='unique_ingredients',
             ),
         ]
-
-    def __str__(self):
-        self.amount
 
 
 class FavoriteRecipe(models.Model):

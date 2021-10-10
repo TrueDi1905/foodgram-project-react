@@ -14,11 +14,13 @@ class RecipeFilter(django_filters.FilterSet):
 
     def get_favorite(self, queryset, name, value):
         if self.request.query_params.get('is_favorited'):
-            return Recipe.objects.filter(favorite_recipe__user=self.request.user)
+            return Recipe.objects.filter(
+                favorite_recipe__user=self.request.user)
 
     def get_shop_cart(self, queryset, name, value):
         if self.request.query_params.get('is_in_shopping_cart'):
-            return Recipe.objects.filter(shop_recipe__user=self.request.user)
+            return Recipe.objects.filter(
+                shop_recipe__user=self.request.user)
 
     class Meta:
         model = Recipe

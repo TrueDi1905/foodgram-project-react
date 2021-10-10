@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
-from djoser.serializers import UserCreateSerializer, UserSerializer
 from djoser.conf import settings
+from djoser.serializers import UserCreateSerializer, UserSerializer
+from rest_framework import serializers
+
 from recipes.models import Recipe
 from users.models import Subscription
 
@@ -15,7 +16,9 @@ class CustomUserSerializer(UserSerializer):
         model = User
         fields = tuple(User.REQUIRED_FIELDS) + (
             settings.USER_ID_FIELD,
-            settings.LOGIN_FIELD, 'username','first_name', 'last_name', 'email', 'is_subscribed')
+            settings.LOGIN_FIELD,
+            'username', 'first_name',
+            'last_name', 'email', 'is_subscribed')
         extra_kwargs = {
             'first_name': {'required': True},
             'last_name': {'required': True},
@@ -30,7 +33,7 @@ class CustomUserSerializer(UserSerializer):
             if Subscription.objects.filter(user=user, follow=obj.id).exists():
                 return True
             return False
-        except:
+        except BaseException:
             return False
 
 
@@ -75,13 +78,16 @@ class SubscribeSerializer(serializers.ModelSerializer):
         if data['user'] == data['follow']:
             raise serializers.ValidationError(
                 'Нельзя подписаться на самого себя!')
-        if Subscription.objects.filter(user=data['user'], follow=data['follow']).exists():
-            raise serializers.ValidationError('Вы уже подписаны на этого парня!')
+        if Subscription.objects.filter(
+                user=data['user'], follow=data['follow']).exists():
+            raise serializers.ValidationError(
+                'Вы уже подписаны на этого парня!')
         return data
 
     def to_representation(self, instance):
         follow = CustomUserSerializer(instance.follow).data
-        recipes = get_recipes(Recipe.objects.filter(author=instance.follow))
+        recipes = get_recipes(Recipe.objects.filter(
+            author=instance.follow))
         recipe_count = get_recipes_count(instance.follow)
         result = follow
         result['recipes'] = recipes
@@ -103,16 +109,19 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         try:
             follow = CustomUserSerializer(instance.follow).data
-            recipes_limit = self.context['request'].query_params.get('recipes_limit')
-            recipes = get_recipes(Recipe.objects.filter(author=instance.follow)[:int(recipes_limit)])
+            recipes_limit = self.context['request'].query_params.get(
+                'recipes_limit')
+            recipes = get_recipes(Recipe.objects.filter(
+                author=instance.follow)[:int(recipes_limit)])
             recipe_count = get_recipes_count(instance.follow)
             result = follow
             result['recipes'] = recipes
             result['recipe_count'] = recipe_count
             return result
-        except:
+        except BaseException:
             follow = CustomUserSerializer(instance.follow).data
-            recipes = get_recipes(Recipe.objects.filter(author=instance.follow))
+            recipes = get_recipes(Recipe.objects.filter(
+                author=instance.follow))
             recipe_count = get_recipes_count(instance.follow)
             result = follow
             result['recipes'] = recipes
