@@ -13,8 +13,7 @@ from .filters import RecipeFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientAmount, Recipe,
                      ShoppingCart, Tag)
 from .serializers import (FavoriteRecipeSerializer, IngredientSerializer,
-                          RecipeSerializer, ShoppingSerializers,
-                          TagSerializer)
+                          RecipeSerializer, ShoppingSerializers, TagSerializer)
 
 
 class TagList(viewsets.ReadOnlyModelViewSet):
