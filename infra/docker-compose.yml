@@ -35,14 +35,14 @@ services:
       - static_value:/code/static/
       - media_value:/code/media/
     env_file:
-      - ../backend/.env
+      - ../.env
   db:
     image: postgres:12.4
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ../backend/.env
+      - ../.env
 volumes:
   postgres_data:
   static_value:
