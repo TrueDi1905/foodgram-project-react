@@ -48,13 +48,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=True, methods=['GET', 'DELETE'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['GET', 'DELETE'],
+            permission_classes=[IsAuthenticated])
     def favorite(self, request, pk):
         user = request.user.id
         recipe = get_object_or_404(Recipe, id=pk)
         if request.method == 'GET':
             data = {'user': user, 'recipe': pk}
-            serializer = self.get_serializer(data=data, context={'request': request, 'recipe': recipe})
+            serializer = self.get_serializer(
+                data=data, context={'request': request, 'recipe': recipe})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -66,17 +68,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe_follow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['GET', 'DELETE'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['GET', 'DELETE'],
+            permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
         user = request.user.id
         recipe = get_object_or_404(Recipe, id=pk)
         if request.method == 'GET':
             data = {'user': user, 'recipes_shop': pk}
-            serializer = self.get_serializer(data=data, context={'request': request, 'recipes_shop': recipe})
+            serializer = self.get_serializer(
+                data=data,
+                context={'request': request, 'recipes_shop': recipe})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        recipe_follow = ShoppingCart.objects.filter(user=user, recipes_shop=recipe)
+        recipe_follow = ShoppingCart.objects.filter(
+            user=user, recipes_shop=recipe)
         if not recipe_follow:
             return Response({
                 'errors': 'Вы не добавляли этот рецепт в список покупок!'
@@ -85,7 +91,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False)
-    def download_shopping_cart(self, request, permission_classes=[IsAuthenticated]):
+    def download_shopping_cart(self, request,
+                               permission_classes=[IsAuthenticated]):
         shop_list = ShoppingCart.objects.filter(user=request.user).all()
         recipes = []
         for i in shop_list:
@@ -96,7 +103,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ingredients_sale = {}
         for i in ingredients:
             if i.ingredients in ingredients_sale:
-                ingredients_sale[i.ingredients] = ingredients_sale[i.ingredients] + i.amount
+                ingredients_sale[i.ingredients] = (
+                    ingredients_sale[i.ingredients] + i.amount)
+
                 break
             ingredients_sale[i.ingredients] = i.amount
         result_sale = ''
@@ -108,7 +117,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         download.write(result_sale)
         download.close()
         read_file = open("sale_list.txt", "r")
-        response = HttpResponse(read_file.read(), content_type="text/plain,charset=utf8")
+        response = HttpResponse(read_file.read(),
+                                content_type="text/plain,charset=utf8")
         read_file.close()
-        response['Content-Disposition'] = 'attachment; filename="{}.txt"'.format('file_name')
+        response['Content-Disposition'] = (
+            'attachment; filename="{}.txt"'.format('file_name'))
         return response

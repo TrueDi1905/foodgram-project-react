@@ -80,7 +80,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Tag.objects.all()
-                                              )
+    )
     ingredients = IngredientRecipeSerializer(
         many=True, source='ingredient_amount')
     image = Base64ImageField()
