@@ -111,7 +111,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         for i in ingredients_sale:
             weight = 0
             weight += ingredients_sale[i]
-            result_sale += (f'{i.name} - {str(weight)} {i.measurement_unit}. ')
+            result_sale += (f'{i.name} - {str(weight)} {i.measurement_unit}, ')
         download = open("sale_list.txt", "w+")
         download.write(result_sale)
         download.close()
