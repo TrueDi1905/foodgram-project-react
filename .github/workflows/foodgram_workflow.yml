@@ -14,6 +14,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        context: backend/
         python -m pip install --upgrade pip
         pip install flake8 pep8-naming flake8-broken-line flake8-return
         pip install -r requirements.txt
