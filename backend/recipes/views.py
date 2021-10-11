@@ -84,7 +84,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             user=user, recipes_shop=recipe)
         if not recipe_follow:
             return Response({
-                'errors': 'Вы не добавляли этот рецепт в список покупок!'
+                'errors': 'Вы не добавляли этот рецепт в список покупок'
             }, status=status.HTTP_400_BAD_REQUEST)
         recipe_follow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
