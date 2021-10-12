@@ -1,6 +1,6 @@
 # Foodgram
 
-http://178.154.199.83/ -Foodgram
+http://178.154.199.83/ - Foodgram(Продуктовый помощник)
 
 ### Описание
 «Продуктовый помощник» (Проект Яндекс.Практикум) Сайт для публикации кулинарных рецептов. Пользователи могут создавать свои рецепты, читать рецепты других пользователей, подписываться на интересных авторов, добавлять лучшие рецепты в избранное, а также создавать список покупок и загружать его в txt формате. 
@@ -31,3 +31,4 @@ docker-compose exec backend python manage.py loaddata fixtures.json
 login - TrueDi1905
 password - dima1212
 
+- ![example workflow](https://github.com/TrueDi1905/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
