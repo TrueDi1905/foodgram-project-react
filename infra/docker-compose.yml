@@ -37,11 +37,9 @@ services:
     env_file:
       - ./.env
   db:
-    image: postgres:12.4
-    restart: always
+    image: postgres:13.3
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-      restart: always
     env_file:
       - ./.env
 volumes:

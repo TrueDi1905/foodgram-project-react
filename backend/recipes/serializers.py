@@ -38,6 +38,7 @@ class Base64ImageField(serializers.ImageField):
 
         extension = imghdr.what(file_name, decoded_file)
         extension = "jpg" if extension == "jpeg" else extension
+        return extension
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -107,6 +108,37 @@ class RecipeSerializer(serializers.ModelSerializer):
         if Recipe.objects.filter(name=data['name']):
             raise serializers.ValidationError(
                 'Рецепт с таким именем уже есть!')
+        return data
+
+    def validate_ingredients(self, data):
+        ingredients = self.initial_data.get('ingredients')
+        ingredients_set = set()
+        if not ingredients:
+            raise serializers.ValidationError(
+                'Добавьте хотя бы один ингредиент')
+        for ingredient in ingredients:
+            if int(ingredient['amount']) < 1:
+                raise serializers.ValidationError(
+                    'Количество ингредиента не может быть меньше 1.')
+            ingredient_id = ingredient.get('id')
+            if ingredient_id in ingredients_set:
+                raise serializers.ValidationError(
+                    'Ингредиент в списке должен быть уникальным.'
+                )
+            ingredients_set.add(ingredient_id)
+        return data
+
+    def validate_tags(self, data):
+        tags_set = set()
+        if not data:
+            raise serializers.ValidationError(
+                'Добавьте хотя бы один тэг')
+        for tag in data:
+            if tag in tags_set:
+                raise serializers.ValidationError(
+                    'Ингредиент в списке должен быть уникальным.'
+                )
+            tags_set.add(tag)
         return data
 
     def create(self, validated_data):
