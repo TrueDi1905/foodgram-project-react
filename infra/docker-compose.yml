@@ -27,7 +27,7 @@ services:
       - backend
 
   backend:
-    build: .
+    image: truedi1905/foodgram:latest
     restart: always
     depends_on:
       - db
