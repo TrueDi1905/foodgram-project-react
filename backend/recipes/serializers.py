@@ -60,11 +60,11 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         return FavoriteRecipe.objects.filter(
-            user=self.context['request'].user, recipe=obj.id).exists()
+            user=self.context['request'].user.id, recipe=obj.id).exists()
 
     def get_is_in_shopping_cart(self, obj):
         return ShoppingCart.objects.filter(
-            user=self.context['request'].user, recipes_shop=obj.id).exists()
+            user=self.context['request'].user.id, recipes_shop=obj.id).exists()
 
     def validate(self, data):
         if data['cooking_time'] <= 0:
