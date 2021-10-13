@@ -1,44 +1,9 @@
 from rest_framework import serializers
-
 from users.serializers import CustomUserSerializer
+from .fields import Base64ImageField
 
 from .models import (FavoriteRecipe, Ingredient, IngredientAmount, Recipe,
                      ShoppingCart, Tag, User)
-
-
-class Base64ImageField(serializers.ImageField):
-
-    def to_internal_value(self, data):
-        import base64
-        import uuid
-
-        import six
-        from django.core.files.base import ContentFile
-
-        if isinstance(data, six.string_types):
-            if 'data:' in data and ';base64,' in data:
-                header, data = data.split(';base64,')
-
-            try:
-                decoded_file = base64.b64decode(data)
-            except TypeError:
-                self.fail('invalid_image')
-
-            file_name = str(uuid.uuid4())[:12]
-            file_extension = self.get_file_extension(file_name, decoded_file)
-
-            complete_file_name = "%s.%s" % (file_name, file_extension, )
-
-            data = ContentFile(decoded_file, name=complete_file_name)
-
-        return super(Base64ImageField, self).to_internal_value(data)
-
-    def get_file_extension(self, file_name, decoded_file):
-        import imghdr
-
-        extension = imghdr.what(file_name, decoded_file)
-        extension = "jpg" if extension == "jpeg" else extension
-        return extension
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -105,7 +70,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         if data['cooking_time'] <= 0:
             raise serializers.ValidationError(
                 'Нереально так быстро приготовить)')
-        if Recipe.objects.filter(name=data['name']):
+        if Recipe.objects.filter(name=data['name']) and (
+                self.context['request'].method == 'POST'):
             raise serializers.ValidationError(
                 'Рецепт с таким именем уже есть!')
         return data
@@ -141,17 +107,22 @@ class RecipeSerializer(serializers.ModelSerializer):
             tags_set.add(tag)
         return data
 
+    def ingredient_add(self, ingredients, recipe):
+        for ingredient in ingredients:
+            current_ingredient = Ingredient.objects.get(
+                id=ingredient['id'].id)
+            IngredientAmount.objects.create(
+                ingredients=current_ingredient,
+                recipes=recipe,
+                amount=ingredient['amount'])
+        return recipe
+
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredient_amount')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        for ingredient in ingredients:
-            current_ingredient = Ingredient.objects.get(id=ingredient['id'].id)
-            IngredientAmount.objects.create(
-                ingredients=current_ingredient,
-                recipes=recipe,
-                amount=ingredient['amount'])
+        recipe = self.ingredient_add(ingredients, recipe)
         return recipe
 
     def update(self, instance, validated_data):
@@ -162,12 +133,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.image = validated_data['image']
         instance.cooking_time = validated_data['cooking_time']
         instance.tags.set(tags)
-        for ingredient in ingredients:
-            current_ingredient = Ingredient.objects.get(id=ingredient['id'].id)
-            IngredientAmount.objects.update_or_create(
-                ingredients=current_ingredient,
-                recipes=instance,
-                amount=ingredient['amount'])
+        instance = self.ingredient_add(ingredients, instance)
         instance.save()
         return instance
 
@@ -201,7 +167,8 @@ class ShoppingSerializers(serializers.ModelSerializer):
 
     def validate(self, data):
         if ShoppingCart.objects.filter(
-                user=data['user'], recipes_shop=data['recipes_shop']).exists():
+                user=data['user'],
+                recipes_shop=data['recipes_shop']).exists():
             raise serializers.ValidationError(
                 'Вы уже добавили рецепт в список покупок!')
         return data

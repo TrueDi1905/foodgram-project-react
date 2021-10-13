@@ -28,13 +28,8 @@ class CustomUserSerializer(UserSerializer):
     def get_is_subscribed(self, obj):
         if not self.context:
             return True
-        try:
-            user = self.context['request'].user
-            if Subscription.objects.filter(user=user, follow=obj.id).exists():
-                return True
-            return False
-        except BaseException:
-            return False
+        user = self.context['request'].user
+        return Subscription.objects.filter(user=user, follow=obj.id).exists()
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -107,23 +102,17 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         model = Subscription
 
     def to_representation(self, instance):
-        try:
-            follow = CustomUserSerializer(instance.follow).data
+        follow = CustomUserSerializer(instance.follow).data
+        recipes = get_recipes(Recipe.objects.filter(
+            author=instance.follow))
+        if self.context['request'].query_params.get(
+                'recipes_limit'):
             recipes_limit = self.context['request'].query_params.get(
                 'recipes_limit')
             recipes = get_recipes(Recipe.objects.filter(
                 author=instance.follow)[:int(recipes_limit)])
-            recipe_count = get_recipes_count(instance.follow)
-            result = follow
-            result['recipes'] = recipes
-            result['recipe_count'] = recipe_count
-            return result
-        except BaseException:
-            follow = CustomUserSerializer(instance.follow).data
-            recipes = get_recipes(Recipe.objects.filter(
-                author=instance.follow))
-            recipe_count = get_recipes_count(instance.follow)
-            result = follow
-            result['recipes'] = recipes
-            result['recipe_count'] = recipe_count
-            return result
+        recipe_count = get_recipes_count(instance.follow)
+        result = follow
+        result['recipes'] = recipes
+        result['recipe_count'] = recipe_count
+        return result

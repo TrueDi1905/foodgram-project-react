@@ -9,3 +9,9 @@ class Subscription(models.Model):
                              related_name="follower")
     follow = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name="following")
+    constraints = [
+        models.UniqueConstraint(
+            fields=['user', 'follow'],
+            name='unique_follow',
+        ),
+    ]

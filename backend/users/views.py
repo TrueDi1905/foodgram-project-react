@@ -4,18 +4,14 @@ from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .models import Subscription
+from .paginator import UserPagination
 from .serializers import (CustomUserSerializer, SubscribeSerializer,
                           SubscriptionSerializer)
 
 User = get_user_model()
-
-
-class UserPagination(PageNumberPagination):
-    page_size_query_param = 'limit'
 
 
 class CustomUserViewSet(UserViewSet):
@@ -27,9 +23,11 @@ class CustomUserViewSet(UserViewSet):
         subscribe = Subscription.objects.filter(user=request.user)
         page = self.paginate_queryset(subscribe)
         if page is not None:
-            serializer = SubscriptionSerializer(page, many=True)
+            serializer = SubscriptionSerializer(
+                page, context={'request': request}, many=True)
             return self.get_paginated_response(serializer.data)
-        serializer = SubscriptionSerializer(subscribe, many=True)
+        serializer = SubscriptionSerializer(
+            subscribe, context={'request': request}, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['GET', 'DELETE'])
