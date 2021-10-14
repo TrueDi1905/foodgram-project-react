@@ -1,7 +1,8 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from users.serializers import CustomUserSerializer
-from .fields import Base64ImageField
 
+from .fields import Base64ImageField
 from .models import (FavoriteRecipe, Ingredient, IngredientAmount, Recipe,
                      ShoppingCart, Tag, User)
 
@@ -109,8 +110,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def ingredient_add(self, ingredients, recipe):
         for ingredient in ingredients:
-            current_ingredient = Ingredient.objects.get(
-                id=ingredient['id'].id)
+            current_ingredient = get_object_or_404(
+                Ingredient, id=ingredient['id'].id)
             IngredientAmount.objects.create(
                 ingredients=current_ingredient,
                 recipes=recipe,
