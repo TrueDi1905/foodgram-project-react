@@ -9,7 +9,6 @@ from rest_framework.permissions import (IsAuthenticated,
 from rest_framework.response import Response
 
 from users.views import UserPagination
-
 from .filters import RecipeFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientAmount, Recipe,
                      ShoppingCart, Tag)
