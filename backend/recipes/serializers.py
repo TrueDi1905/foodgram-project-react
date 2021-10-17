@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from users.serializers import CustomUserSerializer
 from .fields import Base64ImageField
@@ -59,11 +60,11 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['cooking_time'] <= 0:
-            raise serializers.ValidationError(
+            raise ValidationError(
                 'Нереально так быстро приготовить)')
         if Recipe.objects.filter(name=data['name']) and (
                 self.context['request'].method == 'POST'):
-            raise serializers.ValidationError(
+            raise ValidationError(
                 'Рецепт с таким именем уже есть!')
         return data
 
@@ -121,9 +122,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredient_amount')
         instance.name = validated_data['name']
         instance.text = validated_data['text']
-        instance.image = validated_data['image']
         instance.cooking_time = validated_data['cooking_time']
         instance.tags.set(tags)
+        instance.ingredients.clear()
         instance = self.ingredient_add(ingredients, instance)
         instance.save()
         return instance
