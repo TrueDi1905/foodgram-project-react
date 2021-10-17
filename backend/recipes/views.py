@@ -14,7 +14,8 @@ from .models import (FavoriteRecipe, Ingredient, IngredientAmount, Recipe,
                      ShoppingCart, Tag)
 from .permissions import IsAuthorOrAdmin
 from .serializers import (FavoriteRecipeSerializer, IngredientSerializer,
-                          RecipeSerializer, ShoppingSerializers, TagSerializer)
+                          RecipeSerializer, ShoppingSerializers, TagSerializer,
+                          RecipeGetSerializer)
 
 
 class TagList(viewsets.ReadOnlyModelViewSet):
@@ -43,6 +44,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return FavoriteRecipeSerializer
         if self.action == 'shopping_cart':
             return ShoppingSerializers
+        if self.request.method == 'GET':
+            return RecipeGetSerializer
         return RecipeSerializer
 
     def perform_create(self, serializer):
