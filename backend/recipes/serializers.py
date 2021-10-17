@@ -43,8 +43,8 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
-    tags = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Tag.objects.all()
+    tags = TagSerializer(
+        many=True
     )
     ingredients = IngredientRecipeSerializer(
         many=True, source='ingredient_amount')
