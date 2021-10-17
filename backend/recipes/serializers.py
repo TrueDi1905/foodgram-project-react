@@ -60,11 +60,11 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['cooking_time'] <= 0:
-            raise ValidationError(
-                'Нереально так быстро приготовить)')
+            raise serializers.ValidationError(
+                {'name': 'Нереально так быстро приготовить'})
         if Recipe.objects.filter(name=data['name']) and (
                 self.context['request'].method == 'POST'):
-            raise ValidationError(
+            raise serializers.ValidationError(
                 'Рецепт с таким именем уже есть!')
         return data
 
