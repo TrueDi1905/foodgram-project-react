@@ -98,6 +98,12 @@ class RecipeSerializer(serializers.ModelSerializer):
             tags_set.add(tag)
         return data
 
+    def validate_cooking_time(self, data):
+        if data <= 0:
+            raise serializers.ValidationError(
+                'Время не должно быть 0 или меньше!')
+        return data
+
     def ingredient_add(self, ingredients, recipe):
         for ingredient in ingredients:
             current_ingredient = get_object_or_404(
