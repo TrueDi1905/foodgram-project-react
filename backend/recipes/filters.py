@@ -1,8 +1,10 @@
 import django_filters
 
+from recipes.models import Recipe
+
 
 class RecipeFilter(django_filters.FilterSet):
-    tags = django_filters.CharFilter(name='tags', lookup_expr='slug')
+    tags = django_filters.CharFilterInFilter(field_name='tags__slug', lookup_expr='in')
     author = django_filters.NumberFilter(lookup_expr='id')
     is_favorited = django_filters.filters.BooleanFilter(
         method='get_favorite',
@@ -24,3 +26,7 @@ class RecipeFilter(django_filters.FilterSet):
                 shop_recipe__user=self.request.user
             )
         return queryset
+
+    class Meta:
+        model = Recipe
+        fields = ['author', 'tags']
