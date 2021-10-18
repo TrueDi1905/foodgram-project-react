@@ -3,13 +3,9 @@ from django_filters import rest_framework as filters
 from recipes.models import Recipe
 
 
-class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):
-    pass
-
-
 class RecipeFilter(filters.FilterSet):
-    tags = CharFilterInFilter(
-        field_name='tags__slug', lookup_expr='in')
+    tags = filters.AllValuesMultipleFilter(
+        field_name='tags__slug')
     is_favorited = filters.BooleanFilter(
         method='get_favorite',
     )
@@ -33,4 +29,4 @@ class RecipeFilter(filters.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ['author', 'tags']
+        fields = ['author', 'tags', 'is_favorited', 'is_in_shopping_cart']
