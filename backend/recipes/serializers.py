@@ -58,7 +58,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                   )
 
     def validate(self, data):
-        if data['cooking_time'] <= 0:
+        if data['cooking_time'] < 1:
             raise serializers.ValidationError(
                 {'name': 'Нереально так быстро приготовить.'})
         if Recipe.objects.filter(name=data['name']) and (
