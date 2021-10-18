@@ -4,7 +4,8 @@ from recipes.models import Recipe
 
 
 class RecipeFilter(django_filters.FilterSet):
-    tags = django_filters.CharFilterInFilter(field_name='tags__slug', lookup_expr='in')
+    tags = django_filters.CharFilterInFilter(
+        field_name='tags__slug', lookup_expr='in')
     author = django_filters.NumberFilter(lookup_expr='id')
     is_favorited = django_filters.filters.BooleanFilter(
         method='get_favorite',
