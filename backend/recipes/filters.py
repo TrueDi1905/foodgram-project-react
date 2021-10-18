@@ -10,8 +10,7 @@ class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):
 class RecipeFilter(filters.FilterSet):
     tags = CharFilterInFilter(
         field_name='tags__slug', lookup_expr='in')
-    author = filters.NumberFilter(lookup_expr='id')
-    is_favorited = filters.filters.BooleanFilter(
+    is_favorited = filters.BooleanFilter(
         method='get_favorite',
     )
     is_in_shopping_cart = filters.filters.BooleanFilter(
