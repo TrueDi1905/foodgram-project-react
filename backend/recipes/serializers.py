@@ -98,7 +98,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             tags_set.add(tag)
         return data
 
-
     def ingredient_add(self, ingredients, recipe):
         for ingredient in ingredients:
             current_ingredient = get_object_or_404(
