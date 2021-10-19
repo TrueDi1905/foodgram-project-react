@@ -43,7 +43,7 @@ class Recipe(models.Model):
         Ingredient, through="IngredientAmount"
     )
     tags = models.ManyToManyField("Tag")
-    cooking_time = models.PositiveSmallIntegerField(
+    cooking_time = models.CharField(
         verbose_name="Время приготовления в минутах"
     )
 
@@ -61,7 +61,7 @@ class IngredientAmount(models.Model):
     )
     recipes = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, related_name="ingredient_amount")
-    amount = models.PositiveSmallIntegerField(verbose_name="Кол-во")
+    amount = models.IntegerField(verbose_name="Кол-во")
 
     class Meta:
         verbose_name_plural = "Кол-во ингридиентов"
